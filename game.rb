@@ -14,6 +14,8 @@ class Game
     create_shuffle_deck
     deal_cards
     place_bets
+    choose_next_step
+    take_decision
   end
 
   def new_round
@@ -21,6 +23,17 @@ class Game
   end
 
   protected
+
+  def take_decision
+    @deler.calculate_amount
+    if @deler.sum_hand < 17
+      @deler.deal_card(@deck.new_deck, 1)
+    else
+      @deler.skip
+    end
+    @deler.show_cards
+    @player.calculate_amount
+  end
 
   def create_bank
     @bank = Bank.new
@@ -44,11 +57,17 @@ class Game
 
   def deal_cards
     puts "DELER's cards:"
-    puts ' *    *'
+    # puts ' *    *'
     @deler.deal_card(@deck.new_deck, 2)
+    @deler.show_cards
     puts "#{@player.name}, your cards:"
     @player.deal_card(@deck.new_deck, 2)
     @player.show_cards
+  end
+
+  def add_card(player = @player)
+    player.deal_card(@deck.new_deck, 1)
+    player.show_cards
   end
 
   def place_bets
@@ -56,6 +75,19 @@ class Game
     @deler.place_bet
     @bank.recieve_money
     puts "Now in bank #{@bank.money}"
+  end
+
+  def skip_turn(player = @player)
+    player.skip
+  end
+
+  def choose_next_step
+    menu_hash = [{ index: 1, title: 'Skip_turn', action: :skip_turn },
+                 { index: 2, title: 'Take 3-d card', action: :add_card }]
+    menu_hash.each.each { |item| puts "#{item[:index]} - #{item[:title]}" }
+    mark = gets.to_i
+    find_item = menu_hash.find { |item| item[:index] == mark }
+    send(find_item[:action]) unless find_item.nil?
   end
 end
 
