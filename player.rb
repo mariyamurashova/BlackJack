@@ -49,7 +49,7 @@ class Player
     @turn = true
   end
 
-  def current_amount
+  def calculate_money
     puts "#{@name} amount - #{@money}$"
   end
 
