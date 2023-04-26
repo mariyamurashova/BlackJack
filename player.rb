@@ -9,10 +9,13 @@ class Player
     @money = money
     @turn = false
     @has_A = false
+    @sum_hand = 0
   end
 
   def show_cards
     @hand.each { |card| print "#{card.name}   " }
+    # calculate_amount
+    print "  #{@name},you have  #{@sum_hand}  points"
     puts ''
   end
 
@@ -21,6 +24,7 @@ class Player
       card_hand = deck.sample
       deck.delete(card_hand)
       has_Ace(card_hand)
+      @sum_hand += card_hand.value
       @hand << card_hand
     end
   end
@@ -28,7 +32,7 @@ class Player
   def has_Ace(card)
     return unless card.name.include?('A')
 
-    if @has_A == false
+    if @has_A == false && @sum_hand < 11
       card.value = 11
       @has_A = true
     else
@@ -37,9 +41,8 @@ class Player
   end
 
   def calculate_amount
-    @sum_hand = 0
     @hand.each { |card| @sum_hand += card.value }
-    puts "#{name} your sum is #{@sum_hand}"
+    print "  #{@name},you have  #{@sum_hand}  points"
   end
 
   def skip
