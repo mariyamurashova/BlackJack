@@ -5,6 +5,8 @@ require_relative 'cards'
 require_relative 'player'
 require_relative 'deler'
 require_relative 'deck'
+#require 'pry'
+
 
 class Game
   def new_game
@@ -16,23 +18,51 @@ class Game
     place_bets
     choose_next_step
     take_decision
+    who_is_winner
   end
 
   def new_round
     puts 'new_round'
   end
 
+  def who_is_winner
+    if draw? 
+      puts "It's DRAW"
+    else 
+      if player_winner? 
+        puts "#{@player.name} You are the WINNER"
+      else 
+        puts"#{@player.name} You LOSE"
+      end
+    end
+  end
+
+  def draw?
+      @player.sum_hand - @deler.sum_hand == 0   
+  end
+
+  def player_winner?
+    (@player.sum_hand == 21 &&  @deler.sum_hand !=21) ||
+    (@player.sum_hand < 21 &&  @deler.sum_hand > 21) ||
+    (@player.sum_hand - @deler.sum_hand > 0 &&  @player.sum_hand < 21) ||
+    (@player.sum_hand - @deler.sum_hand < 0 &&  @player.sum_hand > 21) 
+end
+   
   protected
 
+     def difference_21?
+      @player.sum_hand - 21 > @deler.sum_hand-21
+    end
+
+
   def take_decision
-    @deler.calculate_amount
     if @deler.sum_hand < 17
       @deler.deal_card(@deck.new_deck, 1)
     else
       @deler.skip
     end
     @deler.show_cards
-    @player.calculate_amount
+   
   end
 
   def create_bank
