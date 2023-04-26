@@ -11,7 +11,6 @@ class Deck
   end
 
   def create
-    value = 0
     @cards_names.each do |name|
       name_letter = name.split
       card_value = name_letter[0].to_i.zero? ? 10 : name_letter[0].to_i
