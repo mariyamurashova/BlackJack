@@ -11,7 +11,7 @@ class Bank
     @money += 20
   end
 
-  def give_money_winner
+  def gives_money_winner
     @money = 0
   end
 end
