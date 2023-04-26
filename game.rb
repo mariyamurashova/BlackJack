@@ -72,6 +72,7 @@ end
   def add_player
     puts 'Enter your name'
     name = gets.chomp
+    puts ''
     @player = Player.new(name)
   end
 
