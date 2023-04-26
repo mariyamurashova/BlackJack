@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Deler < Player
-  def initialize(name = 'Deler')
+  def initialize(name = 'DELER')
     super
   end
 end
