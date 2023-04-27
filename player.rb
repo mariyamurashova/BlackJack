@@ -53,4 +53,13 @@ class Player
       puts "Oops #{@name} hasn't enaugh money!"
     end
   end
+
+  def player_moved?
+    @hand.length < 3 && @turn == false
+  end
+
+  def get_money(bank)
+    @money += bank.money
+    bank.money = 0
+  end
 end
