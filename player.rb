@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Player
-  attr_accessor :hand, :money, :name, :turn, :sum_hand, :has_A
+  attr_accessor :hand, :money, :name, :turn, :sum_hand, :ace
 
   def initialize(name, money = 100)
     @name = name
