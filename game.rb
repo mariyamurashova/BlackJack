@@ -64,8 +64,8 @@ class Game
   end
 
   def halve_money
-    @player.money += 10
-    @deler.money += 10
+    @player.money += @bank.money/2
+    @deler.money += @bank.money/2
     @bank.money = 0
   end
 
@@ -85,8 +85,8 @@ class Game
     @deler.sum_hand = 0
     @player.hand = []
     @deler.hand = []
-    @player.has_A = false
-    @deler.has_A = false
+    @player.ace = false
+    @deler.ace = false
     @player.turn = false
     @deler.turn = false
   end
