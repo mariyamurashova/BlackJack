@@ -6,6 +6,16 @@ require_relative 'player'
 require_relative 'deler'
 require_relative 'deck'
 
+MENU_START = [{ index: 1, title: 'New game', action: :new_game },
+              { index: 0, title: 'EXIT', action: :quit }].freeze
+
+MENU_GAME = [{ index: 1, title: 'Skip_turn', action: :skip_turn },
+             { index: 2, title: 'Take 3-d card', action: :add_card },
+             { index: 3, title: 'Open cards', action: :open_cards }].freeze
+
+MENU_END = [{ index: 1, title: 'New_round', action: :new_round },
+            { index: 2, title: 'Finish the Game and exit', action: :quit }].freeze
+
 class Game
   def new_game
     create_bank
@@ -14,29 +24,43 @@ class Game
     start
   end
 
+  def show_menu(menu)
+    puts ''
+    menu.each.each { |item| puts "#{item[:index]} - #{item[:title]}" }
+    mark = gets.to_i
+    find_item = menu.find { |item| item[:index] == mark }
+    send(find_item[:action]) unless find_item.nil?
+  end
+
+  protected
+
   def new_round
     clear_data
     start
   end
 
-  protected
+  def start
+    create_shuffle_deck
+    deal_cards
+    place_bets
+    show_menu(MENU_GAME)
+    take_decision
+    who_is_winner
+    open_cards
+    show_menu(MENU_END)
+  end
 
   def who_is_winner
     if draw?
       halve_money
-      puts "It's DRAW"
+      puts "It's DRAW\n\n"
     elsif player_winner?
-      gives_money_winner(@player)
+      @player.get_money(@bank)
       puts "#{@player.name} You are the WINNER\n\n"
     else
-      gives_money_winner(@deler)
+      @deler.get_money(@bank)
       puts "#{@player.name} You LOSE\n\n"
     end
-  end
-
-  def gives_money_winner(player)
-    player.money += @bank.money
-    @bank.money = 0
   end
 
   def halve_money
@@ -52,8 +76,8 @@ class Game
   def player_winner?
     (@player.sum_hand == 21 && @deler.sum_hand != 21) ||
       (@player.sum_hand < 21 && @deler.sum_hand > 21) ||
-      (@player.sum_hand - @deler.sum_hand > 0 &&  @player.sum_hand < 21) ||
-      (@player.sum_hand - @deler.sum_hand < 0 &&  @player.sum_hand > 21)
+      ((@player.sum_hand - @deler.sum_hand).positive? && @player.sum_hand < 21) ||
+      ((@player.sum_hand - @deler.sum_hand).negative? && @player.sum_hand > 21)
   end
 
   def clear_data
@@ -67,27 +91,17 @@ class Game
     @deler.turn = false
   end
 
-  def start
-    create_shuffle_deck
-    deal_cards
-    place_bets
-    take_decision
-    next_step_menu1
-    next_step_menu1
-    who_is_winner
-  end
-
   def difference_21?
     @player.sum_hand - 21 > @deler.sum_hand - 21
   end
 
   def take_decision
     if @deler.sum_hand < 17
-      @deler.deal_card(@deck.new_deck, 1)
+      add_card(@deler)
       puts "DELER's cards:"
       puts " *    *    *\n\n"
     else
-      @deler.skip
+      skip_turn(@deler)
       puts "DELER's cards:"
       puts "*    * \n\n"
     end
@@ -123,13 +137,10 @@ class Game
   end
 
   def add_card(player = @player)
-    if player.hand.length < 3 && !player.turn
+    if player.player_moved?
       player.deal_card(@deck.new_deck, 1)
-      player.show_cards
-      open_cards
     else
       puts "It's impossible take more cards."
-      # open_cards
     end
   end
 
@@ -140,54 +151,37 @@ class Game
   end
 
   def skip_turn(player = @player)
-    if player.hand.length < 3 && player.turn == false
+    if player.player_moved?
       player.skip
     else
       puts 'Choose another action'
-      next_step_menu1
     end
   end
 
   def open_cards
-    print "#{@player.name}:  "
-    @player.show_cards
-    print 'DELER:  '
-    @deler.show_cards
+    if !@deler.player_moved?
+      print "#{@player.name}:  "
+      @player.show_cards
+      print 'DELER:  '
+      @deler.show_cards
+      game_result
+      show_menu(MENU_END)
+    else
+      take_decision
+    end
+  end
+
+  def game_result
     who_is_winner
     @player.calculate_money
     @deler.calculate_money
-    next_step_menu2
   end
 
   def quit
     puts 'GoodBye!'
     exit(0)
   end
-
-  def next_step_menu2
-    menu_hash = [{ index: 1, title: 'New_round', action: :new_round },
-                 { index: 2, title: 'Finish the Game and exit', action: :quit }]
-    menu_hash.each.each { |item| puts "#{item[:index]} - #{item[:title]}" }
-    mark = gets.to_i
-    find_item = menu_hash.find { |item| item[:index] == mark }
-    send(find_item[:action]) unless find_item.nil?
-  end
-
-  def next_step_menu1
-    menu_hash = [{ index: 1, title: 'Skip_turn', action: :skip_turn },
-                 { index: 2, title: 'Take 3-d card', action: :add_card },
-                 { index: 3, title: 'Open cards', action: :open_cards }]
-    menu_hash.each.each { |item| puts "#{item[:index]} - #{item[:title]}" }
-    mark = gets.to_i
-    find_item = menu_hash.find { |item| item[:index] == mark }
-    send(find_item[:action]) unless find_item.nil?
-  end
 end
 
 game = Game.new
-menu_hash = [{ index: 1, title: 'New game', action: :new_game },
-             { index: 0, title: 'EXIT', action: :quit }]
-menu_hash.each.each { |item| puts "#{item[:index]} - #{item[:title]}" }
-mark = gets.to_i
-find_item = menu_hash.find { |item| item[:index] == mark }
-game.send(find_item[:action]) unless find_item.nil?
+game.show_menu(MENU_START)
